@@ -1986,7 +1986,7 @@ function updateSaveButtons() {
 function renderProfileSubmissions(subs) {
   const el = document.getElementById('profile-submissions');
   if (!subs.length) {
-    el.innerHTML = '<div class="empty-state">No submissions yet. <a style="color:var(--terra);cursor:pointer" onclick="showView('submit')">Share your first story.</a></div>';
+    el.innerHTML = "<div class=\"empty-state\">No submissions yet. <a style=\"color:var(--terra);cursor:pointer\" onclick=\"showView('submit')\">Share your first story.</a></div>";
     return;
   }
   el.innerHTML = subs.map(s => {
@@ -2028,4 +2028,4 @@ document.addEventListener('keydown', e => {
 });
 </script>
 </body>
-      </html>
+  </html>
