@@ -528,7 +528,7 @@ textarea.fi{resize:vertical;min-height:240px;line-height:1.8;font-weight:300}
 
   <footer>
     <div class="foot-in">
-      <div><div class="foot-logo">Tended</div><div class="foot-tag">tended.health</div></div>
+      <div><div class="foot-logo">Tended</div><div class="foot-tag">tendedstories.com</div></div>
       <ul class="foot-links" role="list">
         <li><a onclick="showView('feed')">Stories</a></li>
         <li><a onclick="showView('submit')">Submit</a></li>
@@ -829,7 +829,7 @@ textarea.fi{resize:vertical;min-height:240px;line-height:1.8;font-weight:300}
         </div>
         <div class="fg" style="margin-bottom:0">
           <label class="fl" for="s-email">Email <span style="font-weight:400;color:var(--muted-lt)">(optional)</span></label>
-          <input type="email" id="s-email" class="fi" placeholder="For review status only. Never shared or sold.">
+          <input type="text" id="s-email" class="fi" placeholder="For review status only. Never shared or sold.">
         </div>
       </div>
 
@@ -1248,10 +1248,10 @@ function renderStoryCard(s) {
       <div class="sc-ttl">${s.title}</div>
       <div class="sc-exc">${s.excerpt}</div>
       <div class="sc-foot">
-        <button class="sc-act" onclick="event.stopPropagation();toggleUpvote(this)" aria-label="Upvote this story, currently ${s.upvotesDisplay}">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4l8 8H4z"/></svg>${s.upvotesDisplay}
+        <button class="sc-act" onclick="event.stopPropagation();toggleUpvote(this,${s.upvotes})" aria-label="Upvote this story">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4l8 8H4z"/></svg><span class="upvote-count">${s.upvotesDisplay}</span>
         </button>
-        <button class="sc-act" onclick="event.stopPropagation()" aria-label="${s.replies} replies">
+        <button class="sc-act" onclick="event.stopPropagation();showStory(${s.id});setTimeout(()=>document.getElementById('cmt-panel').scrollIntoView({behavior:'smooth'}),300)" aria-label="${s.replies} replies">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>${s.replies} replies
         </button>
         <button class="sc-act" onclick="event.stopPropagation()" aria-label="Save this story">
@@ -1404,8 +1404,16 @@ function closeSearch() { document.getElementById('srch-results').classList.remov
 function closeSearchDelay() { setTimeout(closeSearch, 200); }
 
 /* ── INTERACTIONS ─────────────────────────────────────── */
-function toggleUpvote(btn) {
-  btn.classList.toggle('up');
+function toggleUpvote(btn, baseCount) {
+  const isUp = btn.classList.toggle('up');
+  const countEl = btn.querySelector('.upvote-count');
+  if (!countEl) return;
+  // Store base count on first click
+  if (!btn.dataset.base) btn.dataset.base = baseCount || 0;
+  const base = parseInt(btn.dataset.base);
+  const newCount = isUp ? base + 1 : base;
+  // Format with commas
+  countEl.textContent = newCount.toLocaleString();
 }
 
 function toggleReact(btn) {
@@ -1595,4 +1603,4 @@ document.addEventListener('DOMContentLoaded', () => {
 if (document.readyState !== 'loading') renderFeed();
 </script>
 </body>
-</html>
+  </html>
