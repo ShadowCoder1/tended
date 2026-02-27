@@ -7,6 +7,7 @@
 <meta name="description" content="A community where patients, caregivers, and survivors share their real healthcare journeys. No filters. Just human experience.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── TOKENS ─────────────────────────────────── */
 :root {
@@ -362,6 +363,68 @@ textarea.fi{resize:vertical;min-height:240px;line-height:1.8;font-weight:300}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
+
+/* ── AUTH MODAL ─────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--warm);border-radius:10px;padding:36px 32px;width:100%;max-width:420px;position:relative;animation:fadeUp .2s ease both}
+.modal-close{position:absolute;top:14px;right:14px;border:none;background:none;color:var(--muted);cursor:pointer;font-size:1.2rem;line-height:1;padding:4px 8px}
+.modal-close:hover{color:var(--charcoal)}
+.modal h2{font-family:'Lora',serif;font-size:1.35rem;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.02em}
+.modal p.modal-sub{font-size:.86rem;color:var(--muted);margin-bottom:22px;line-height:1.6;font-weight:300}
+.modal-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:22px}
+.modal-tab{padding:8px 18px;border:none;background:none;font-size:.84rem;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:'Source Serif 4',serif}
+.modal-tab.act{color:var(--terra);border-bottom-color:var(--terra);font-weight:500}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-input{width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:5px;background:var(--parchment);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .15s;font-family:'Source Serif 4',serif}
+.auth-input:focus{border-color:var(--terra);background:var(--warm)}
+.auth-input::placeholder{color:var(--muted-lt)}
+.auth-btn{width:100%;padding:11px;background:var(--terra);color:white;border:none;border-radius:5px;font-size:.92rem;font-weight:500;cursor:pointer;transition:background .15s;font-family:'Source Serif 4',serif}
+.auth-btn:hover{background:var(--terra-dk)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed}
+.auth-divider{display:flex;align-items:center;gap:10px;color:var(--muted-lt);font-size:.75rem}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.magic-btn{width:100%;padding:10px;background:transparent;color:var(--charcoal);border:1px solid var(--border);border-radius:5px;font-size:.88rem;cursor:pointer;transition:all .15s;font-family:'Source Serif 4',serif}
+.magic-btn:hover{background:var(--parchment)}
+.auth-msg{font-size:.8rem;padding:10px 13px;border-radius:5px;line-height:1.5;display:none}
+.auth-msg.err{background:#fde8e0;color:#b84a2e;display:block}
+.auth-msg.ok{background:#e5f0e8;color:#2e6640;display:block}
+.auth-switch{font-size:.78rem;color:var(--muted);text-align:center;margin-top:4px}
+.auth-switch a{color:var(--terra);cursor:pointer;text-decoration:none}
+.auth-switch a:hover{text-decoration:underline}
+.user-menu{position:relative}
+.user-av-btn{width:34px;height:34px;border-radius:50%;background:var(--terra);border:none;color:white;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
+.user-av-btn:hover{opacity:.85}
+.user-dropdown{position:absolute;right:0;top:calc(100% + 8px);background:var(--warm);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.1);width:210px;z-index:400;display:none;overflow:hidden}
+.user-dropdown.open{display:block}
+.user-dd-head{padding:13px 15px;border-bottom:1px solid var(--border-lt)}
+.user-dd-name{font-size:.85rem;font-weight:500;color:var(--ink-soft)}
+.user-dd-email{font-size:.72rem;color:var(--muted-lt);margin-top:1px}
+.user-dd-item{display:flex;align-items:center;gap:9px;padding:10px 15px;font-size:.83rem;color:var(--charcoal);cursor:pointer;transition:background .1s;border:none;background:none;width:100%;text-align:left;font-family:'Source Serif 4',serif}
+.user-dd-item:hover{background:var(--parchment);color:var(--ink)}
+.user-dd-item svg{width:14px;height:14px;color:var(--muted);flex-shrink:0}
+.user-dd-sep{height:1px;background:var(--border-lt)}
+.profile-wrap{max-width:700px;margin:0 auto;padding:40px 20px}
+.profile-wrap h1{font-family:'Lora',serif;font-size:1.5rem;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.02em}
+.profile-intro{color:var(--muted);font-size:.88rem;margin-bottom:28px;font-weight:300}
+.profile-section{background:var(--warm);border:1px solid var(--border-lt);border-radius:8px;padding:22px 24px;margin-bottom:12px}
+.ps-hed{font-family:'Lora',serif;font-size:.95rem;font-weight:600;color:var(--ink-soft);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border-lt)}
+.sub-item{padding:12px 0;border-bottom:1px solid var(--border-lt);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.sub-item:last-child{border:none;padding-bottom:0}
+.sub-title{font-family:'Lora',serif;font-size:.9rem;font-weight:500;color:var(--ink);margin-bottom:3px;line-height:1.35}
+.sub-meta{font-size:.73rem;color:var(--muted-lt)}
+.sub-status{font-size:.7rem;font-weight:500;padding:3px 9px;border-radius:12px;flex-shrink:0;white-space:nowrap}
+.status-pending{background:#fef3cd;color:#92650a}
+.status-approved{background:#e5f0e8;color:#2e6640}
+.status-review{background:#e0e8f5;color:#2a4e8a}
+.saved-item{padding:11px 0;border-bottom:1px solid var(--border-lt);cursor:pointer;transition:opacity .12s}
+.saved-item:last-child{border:none;padding-bottom:0}
+.saved-item:hover{opacity:.72}
+.saved-tag{font-size:.63rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.saved-title{font-family:'Lora',serif;font-size:.88rem;font-weight:500;color:var(--ink);line-height:1.35}
+.empty-state{text-align:center;padding:28px 0;color:var(--muted);font-size:.86rem;font-weight:300;line-height:1.6}
+.sign-out-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:.85rem;cursor:pointer;transition:all .15s;font-family:'Source Serif 4',serif;margin-top:8px}
+.sign-out-btn:hover{background:#fde8e0;border-color:#f0b4a0;color:#b84a2e}
 </style>
 </head>
 <body>
@@ -383,7 +446,33 @@ textarea.fi{resize:vertical;min-height:240px;line-height:1.8;font-weight:300}
       <div id="srch-results" class="srch-results" role="listbox" aria-label="Search results"></div>
     </div>
     <div class="nav-acts">
-      <button class="btn-ghost">Sign in</button>
+      <div id="nav-auth-area">
+        <button class="btn-ghost" onclick="openAuthModal('signin')">Sign in</button>
+      </div>
+      <div id="nav-user-area" style="display:none">
+        <div class="user-menu">
+          <button class="user-av-btn" id="user-av-btn" onclick="toggleUserDropdown()" aria-label="Account menu">?</button>
+          <div class="user-dropdown" id="user-dropdown">
+            <div class="user-dd-head">
+              <div class="user-dd-name" id="dd-name">Loading...</div>
+              <div class="user-dd-email" id="dd-email"></div>
+            </div>
+            <button class="user-dd-item" onclick="showView('profile');toggleUserDropdown()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My profile
+            </button>
+            <button class="user-dd-item" onclick="showView('profile');toggleUserDropdown()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>My submissions
+            </button>
+            <button class="user-dd-item" onclick="showView('profile');toggleUserDropdown()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-4-7 4V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Saved stories
+            </button>
+            <div class="user-dd-sep"></div>
+            <button class="user-dd-item" onclick="signOut()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out
+            </button>
+          </div>
+        </div>
+      </div>
       <button class="btn-primary" onclick="showView('submit')">Share your story</button>
     </div>
     <button class="nav-ham" onclick="toggleMobileNav()" aria-label="Toggle menu" aria-expanded="false" id="ham-btn">
@@ -397,7 +486,8 @@ textarea.fi{resize:vertical;min-height:240px;line-height:1.8;font-weight:300}
   <a onclick="showView('feed');closeMobileNav()">Stories</a>
   <a onclick="showView('landing');closeMobileNav()">About</a>
   <div class="nav-mob-sep"></div>
-  <a>Sign in</a>
+  <a id="mob-signin" onclick="openAuthModal('signin');closeMobileNav()">Sign in</a>
+  <a id="mob-signout" style="display:none" onclick="signOut();closeMobileNav()">Sign out</a>
   <a onclick="showView('submit');closeMobileNav()" style="color:var(--terra);font-weight:500">Share your story</a>
 </div>
 
@@ -853,6 +943,81 @@ textarea.fi{resize:vertical;min-height:240px;line-height:1.8;font-weight:300}
   </div>
 </div>
 
+<!-- ══ AUTH MODAL ════════════════════════════════════════ -->
+<div id="auth-modal" class="modal-bg" role="dialog" aria-modal="true" aria-label="Sign in or create account">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+    <h2 id="auth-modal-title">Welcome to Tended</h2>
+    <p class="modal-sub" id="auth-modal-sub">Join the community of patients, caregivers, and survivors.</p>
+    <div class="modal-tabs">
+      <button class="modal-tab act" id="tab-signin" onclick="switchAuthTab('signin')">Sign in</button>
+      <button class="modal-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create account</button>
+    </div>
+    <div id="auth-msg" class="auth-msg"></div>
+
+    <!-- Sign in form -->
+    <div id="form-signin" class="auth-form">
+      <input class="auth-input" id="si-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-input" id="si-password" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="auth-btn" onclick="signIn()">Sign in</button>
+      <div class="auth-divider">or</div>
+      <button class="magic-btn" onclick="sendMagicLink('signin')">✉ Send magic link instead</button>
+      <div class="auth-switch">Don't have an account? <a onclick="switchAuthTab('signup')">Create one</a></div>
+    </div>
+
+    <!-- Sign up form -->
+    <div id="form-signup" class="auth-form" style="display:none">
+      <input class="auth-input" id="su-name" type="text" placeholder="Your first name or preferred name" autocomplete="given-name">
+      <input class="auth-input" id="su-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-input" id="su-password" type="password" placeholder="Password (min. 8 characters)" autocomplete="new-password">
+      <button class="auth-btn" onclick="signUp()">Create account</button>
+      <div class="auth-divider">or</div>
+      <button class="magic-btn" onclick="sendMagicLink('signup')">✉ Sign up with magic link</button>
+      <div class="auth-switch">Already have an account? <a onclick="switchAuthTab('signin')">Sign in</a></div>
+    </div>
+
+    <!-- Magic link sent state -->
+    <div id="form-magic" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:2rem;margin-bottom:12px">✉</div>
+      <div style="font-family:'Lora',serif;font-size:1.05rem;font-weight:600;color:var(--ink);margin-bottom:8px">Check your email</div>
+      <div style="font-size:.84rem;color:var(--muted);line-height:1.65;font-weight:300">We sent a magic link to <strong id="magic-email-shown"></strong>. Click it to sign in instantly — no password needed.</div>
+      <button class="magic-btn" style="margin-top:18px" onclick="resetAuthModal()">Use a different email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILE ═══════════════════════════════════════════ -->
+<div id="view-profile" class="view">
+  <div class="profile-wrap">
+    <button class="back" onclick="showView('feed')" style="margin-bottom:20px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+    <h1>Your profile</h1>
+    <p class="profile-intro" id="profile-greeting">Welcome back.</p>
+
+    <div class="profile-section">
+      <div class="ps-hed">My submissions</div>
+      <div id="profile-submissions">
+        <div class="empty-state">No submissions yet. <a style="color:var(--terra);cursor:pointer" onclick="showView('submit')">Share your first story.</a></div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="ps-hed">Saved stories</div>
+      <div id="profile-saved">
+        <div class="empty-state">No saved stories yet. Tap the bookmark icon on any story to save it here.</div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="ps-hed">Account</div>
+      <div style="font-size:.84rem;color:var(--charcoal);margin-bottom:14px;font-weight:300">Signed in as <strong id="profile-email"></strong></div>
+      <button class="sign-out-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- end #main-content -->
 
 
@@ -1254,7 +1419,7 @@ function renderStoryCard(s) {
         <button class="sc-act" onclick="event.stopPropagation();showStory(${s.id});setTimeout(()=>document.getElementById('cmt-panel').scrollIntoView({behavior:'smooth'}),300)" aria-label="${s.replies} replies">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>${s.replies} replies
         </button>
-        <button class="sc-act" onclick="event.stopPropagation()" aria-label="Save this story">
+        <button class="sc-act save-btn" data-story-id="${s.id}" onclick="event.stopPropagation();toggleSave(${s.id},this)" aria-label="Save this story">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Save
         </button>
         <span class="sc-rt" aria-label="${s.readTime}">${s.readTime}</span>
@@ -1597,10 +1762,270 @@ document.querySelectorAll('.hsi').forEach(el => {
 /* ── INIT ─────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   renderFeed();
+  initSupabase();
+});
+if (document.readyState !== 'loading') { renderFeed(); initSupabase(); }
+
+/* ══ SUPABASE AUTH ════════════════════════════════════════
+   REPLACE these two values with your own Supabase project:
+   1. Go to supabase.com → New project
+   2. Settings → API → copy Project URL and anon key
+═══════════════════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://addqrsjvwwcvjinkxklk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_iOMJbqMBcZFMmAFvZH0WJw_p6Rsmb8n';
+
+let sb = null;
+let currentUser = null;
+let savedStoryIds = new Set();
+
+function initSupabase() {
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return; // not configured yet
+  try {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sb.auth.onAuthStateChange((event, session) => {
+      currentUser = session?.user || null;
+      updateAuthUI();
+      if (currentUser) loadUserData();
+    });
+    sb.auth.getSession().then(({ data: { session } }) => {
+      currentUser = session?.user || null;
+      updateAuthUI();
+      if (currentUser) loadUserData();
+    });
+  } catch(e) { console.warn('Supabase init failed:', e); }
+}
+
+/* ── AUTH UI ──────────────────────────────────────────── */
+function updateAuthUI() {
+  const loggedIn = !!currentUser;
+  document.getElementById('nav-auth-area').style.display  = loggedIn ? 'none' : 'block';
+  document.getElementById('nav-user-area').style.display  = loggedIn ? 'block' : 'none';
+  document.getElementById('mob-signin').style.display     = loggedIn ? 'none' : 'block';
+  document.getElementById('mob-signout').style.display    = loggedIn ? 'block' : 'none';
+  if (loggedIn) {
+    const email = currentUser.email || '';
+    const meta  = currentUser.user_metadata || {};
+    const name  = meta.full_name || email.split('@')[0] || 'You';
+    const initials = name.slice(0,2).toUpperCase();
+    document.getElementById('user-av-btn').textContent  = initials;
+    document.getElementById('dd-name').textContent      = name;
+    document.getElementById('dd-email').textContent     = email;
+    document.getElementById('profile-email').textContent = email;
+    document.getElementById('profile-greeting').textContent = `Welcome back, ${name}.`;
+  }
+}
+
+function openAuthModal(tab) {
+  document.getElementById('auth-modal').classList.add('open');
+  switchAuthTab(tab || 'signin');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById(tab === 'signup' ? 'su-name' : 'si-email')?.focus(), 100);
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  resetAuthModal();
+}
+
+function resetAuthModal() {
+  document.getElementById('form-magic').style.display = 'none';
+  document.getElementById('form-signin').style.display = 'flex';
+  document.getElementById('form-signup').style.display = 'none';
+  document.getElementById('tab-signin').classList.add('act');
+  document.getElementById('tab-signup').classList.remove('act');
+  clearAuthMsg();
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('form-signin').style.display = tab === 'signin' ? 'flex' : 'none';
+  document.getElementById('form-signup').style.display = tab === 'signup' ? 'flex' : 'none';
+  document.getElementById('form-magic').style.display  = 'none';
+  document.getElementById('tab-signin').classList.toggle('act', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('act', tab === 'signup');
+  clearAuthMsg();
+}
+
+function showAuthMsg(msg, type) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.className = 'auth-msg ' + type;
+}
+
+function clearAuthMsg() {
+  const el = document.getElementById('auth-msg');
+  el.className = 'auth-msg';
+  el.textContent = '';
+}
+
+/* ── SIGN UP ──────────────────────────────────────────── */
+async function signUp() {
+  if (!sb) return showAuthMsg('Auth not configured yet.', 'err');
+  const name  = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pass  = document.getElementById('su-password').value;
+  if (!name)          return showAuthMsg('Please enter your name.', 'err');
+  if (!email)         return showAuthMsg('Please enter your email.', 'err');
+  if (pass.length < 8) return showAuthMsg('Password must be at least 8 characters.', 'err');
+  setAuthLoading(true);
+  const { error } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { full_name: name } }
+  });
+  setAuthLoading(false);
+  if (error) return showAuthMsg(error.message, 'err');
+  showAuthMsg('Account created! Check your email to confirm, then sign in.', 'ok');
+}
+
+/* ── SIGN IN ──────────────────────────────────────────── */
+async function signIn() {
+  if (!sb) return showAuthMsg('Auth not configured yet.', 'err');
+  const email = document.getElementById('si-email').value.trim();
+  const pass  = document.getElementById('si-password').value;
+  if (!email) return showAuthMsg('Please enter your email.', 'err');
+  if (!pass)  return showAuthMsg('Please enter your password.', 'err');
+  setAuthLoading(true);
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  setAuthLoading(false);
+  if (error) return showAuthMsg(error.message, 'err');
+  closeAuthModal();
+}
+
+/* ── MAGIC LINK ───────────────────────────────────────── */
+async function sendMagicLink(mode) {
+  if (!sb) return showAuthMsg('Auth not configured yet.', 'err');
+  const emailId = mode === 'signup' ? 'su-email' : 'si-email';
+  const email   = document.getElementById(emailId).value.trim();
+  if (!email) return showAuthMsg('Please enter your email address first.', 'err');
+  setAuthLoading(true);
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.origin }
+  });
+  setAuthLoading(false);
+  if (error) return showAuthMsg(error.message, 'err');
+  document.getElementById('form-signin').style.display = 'none';
+  document.getElementById('form-signup').style.display = 'none';
+  document.getElementById('form-magic').style.display  = 'block';
+  document.getElementById('magic-email-shown').textContent = email;
+}
+
+/* ── SIGN OUT ─────────────────────────────────────────── */
+async function signOut() {
+  if (sb) await sb.auth.signOut();
+  currentUser = null;
+  savedStoryIds = new Set();
+  updateAuthUI();
+  showView('landing');
+}
+
+function setAuthLoading(loading) {
+  document.querySelectorAll('.auth-btn, .magic-btn').forEach(b => b.disabled = loading);
+}
+
+function toggleUserDropdown() {
+  document.getElementById('user-dropdown').classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  const menu = document.getElementById('user-dropdown');
+  if (menu && !menu.closest('.user-menu')?.contains(e.target)) {
+    menu.classList.remove('open');
+  }
 });
 
-// Also render on load in case DOMContentLoaded already fired
-if (document.readyState !== 'loading') renderFeed();
+/* ── SAVE STORIES ─────────────────────────────────────── */
+async function toggleSave(storyId, btn) {
+  if (!currentUser) { openAuthModal('signin'); return; }
+  if (!sb) return;
+  const isSaved = savedStoryIds.has(storyId);
+  if (isSaved) {
+    await sb.from('saved_stories').delete().eq('user_id', currentUser.id).eq('story_id', storyId);
+    savedStoryIds.delete(storyId);
+    if (btn) { btn.classList.remove('act'); btn.setAttribute('aria-label', 'Save this story'); }
+  } else {
+    await sb.from('saved_stories').insert({ user_id: currentUser.id, story_id: storyId });
+    savedStoryIds.add(storyId);
+    if (btn) { btn.classList.add('act'); btn.setAttribute('aria-label', 'Unsave this story'); }
+  }
+}
+
+/* ── LOAD USER DATA ───────────────────────────────────── */
+async function loadUserData() {
+  if (!sb || !currentUser) return;
+  try {
+    // Load saved stories
+    const { data: saved } = await sb
+      .from('saved_stories')
+      .select('story_id')
+      .eq('user_id', currentUser.id);
+    if (saved) {
+      savedStoryIds = new Set(saved.map(r => r.story_id));
+      updateSaveButtons();
+    }
+    // Load submissions
+    const { data: subs } = await sb
+      .from('submissions')
+      .select('title, condition, status, created_at')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    renderProfileSubmissions(subs || []);
+    renderProfileSaved(saved || []);
+  } catch(e) {}
+}
+
+function updateSaveButtons() {
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    const id = parseInt(btn.dataset.storyId);
+    const saved = savedStoryIds.has(id);
+    btn.classList.toggle('act', saved);
+    btn.setAttribute('aria-label', saved ? 'Unsave this story' : 'Save this story');
+  });
+}
+
+function renderProfileSubmissions(subs) {
+  const el = document.getElementById('profile-submissions');
+  if (!subs.length) {
+    el.innerHTML = '<div class="empty-state">No submissions yet. <a style="color:var(--terra);cursor:pointer" onclick="showView('submit')">Share your first story.</a></div>';
+    return;
+  }
+  el.innerHTML = subs.map(s => {
+    const statusClass = s.status === 'approved' ? 'status-approved' : s.status === 'in_review' ? 'status-review' : 'status-pending';
+    const statusLabel = s.status === 'approved' ? 'Live' : s.status === 'in_review' ? 'In review' : 'Pending';
+    const date = new Date(s.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    return `<div class="sub-item">
+      <div><div class="sub-title">${s.title}</div><div class="sub-meta">${s.condition} · Submitted ${date}</div></div>
+      <span class="sub-status ${statusClass}">${statusLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderProfileSaved(saved) {
+  const el = document.getElementById('profile-saved');
+  if (!saved.length) {
+    el.innerHTML = '<div class="empty-state">No saved stories yet. Tap the bookmark icon on any story to save it here.</div>';
+    return;
+  }
+  const savedStories = saved.map(r => STORIES.find(s => s.id === r.story_id)).filter(Boolean);
+  el.innerHTML = savedStories.map(s => `
+    <div class="saved-item" onclick="showStory(${s.id})">
+      <div class="saved-tag" style="color:${s.tagColor}">${s.tagLabel}</div>
+      <div class="saved-title">${s.title}</div>
+    </div>`).join('');
+}
+
+/* ── CLOSE MODAL ON BG CLICK ──────────────────────────── */
+document.getElementById('auth-modal')?.addEventListener('click', e => {
+  if (e.target.id === 'auth-modal') closeAuthModal();
+});
+
+/* ── KEYBOARD: ESC CLOSES MODAL ──────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeAuthModal();
+    document.getElementById('user-dropdown')?.classList.remove('open');
+  }
+});
 </script>
 </body>
-  </html>
+</html>
